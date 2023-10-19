@@ -14,7 +14,7 @@
                 <el-menu :default-active="selectIndex" class="el-menu-demo" mode="horizontal" @select="handleSelect"
                     background-color="#545c64" text-color="#fff" active-text-color="#ffd04b">
                     <el-menu-item index="1" disable> <template slot="title">
-                            <el-image style="height: 100%" src="./logo.png" fit="fill"></el-image>
+                            <el-image style="height: 100%" src="/assets/logo.png" fit="fill"></el-image>
                         </template>
                     </el-menu-item>
                     <el-menu-item index="2">WebRTC测试</el-menu-item>
@@ -1708,7 +1708,7 @@
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 <script src="./js/qs.js"></script>
 <script src="https://cdn.staticfile.org/echarts/5.4.3/echarts.min.js"></script>
-<script src="./ZLMRTCClient.js"></script>
+<script src="./js/ZLMRTCClient.js"></script>
 
 
 <script>
@@ -1745,6 +1745,10 @@
         },
         mounted() {
             if (this.secret == "") {
+                this.$message({
+                    message: '在url路径中添加正确的secret参数',
+                    type: 'error'
+                });
                 return
             }
             else {
@@ -2062,6 +2066,12 @@
                                 type: 'success'
                             });
                         }
+                        else {
+                            this.$message({
+                                message: resp.data.msg,
+                                type: 'success'
+                            });
+                        }
                         this.getMediaList()
                     }
                 }).catch(err => {
@@ -2076,6 +2086,12 @@
                             this.$message({
                                 message: '关闭成功!',
                                 type: 'success'
+                            });
+                        }
+                        else {
+                            this.$message({
+                                message: resp.data.msg,
+                                type: 'error'
                             });
                         }
                         this.getAllSession()
@@ -2100,6 +2116,12 @@
                             }
                             this.serverConfig = data;
                             this.serverConfig_bak = JSON.parse(JSON.stringify(data));
+                        }
+                        else {
+                            this.$message({
+                                message: resp.data.msg,
+                                type: 'error'
+                            });
                         };
                     }
                 }).catch(err => {
@@ -2151,7 +2173,10 @@
                             })
                         }
                         else {
-
+                            this.$message({
+                                message: resp.data.msg,
+                                type: 'error'
+                            });
                         }
                     }
                 }).catch(err => {
@@ -2200,7 +2225,10 @@
                             })
                         }
                         else {
-
+                            this.$message({
+                                message: resp.data.msg,
+                                type: 'error'
+                            });
                         }
                     }
 
@@ -2233,7 +2261,10 @@
                             })
                         }
                         else {
-
+                            this.$message({
+                                message: resp.data.msg,
+                                type: 'error'
+                            });
                         }
                     }
 
@@ -2247,6 +2278,11 @@
                         if (resp.data.code == 0) {
                             this.versioninfo = resp.data.data;
                             console.log(this.versioninfo)
+                        } else {
+                            this.$message({
+                                message: resp.data.msg,
+                                type: 'error'
+                            });
                         }
                     }
                 }).catch(err => {
@@ -2256,7 +2292,15 @@
             getMediaList() {
                 axios.get(`${this.host}/index/api/getMediaList?secret=${this.secret}&` + Qs.stringify(this.getMediaList_queryparams)).then(resp => {
                     if (resp.status == 200) {
-                        if (resp.data.code == 0) this.medialist = resp.data.data;
+                        if (resp.data.code == 0) {
+                            this.medialist = resp.data.data;
+                        }
+                        else {
+                            this.$message({
+                                message: resp.data.msg,
+                                type: 'error'
+                            });
+                        }
                     }
                 }).catch(err => {
 
@@ -2265,7 +2309,12 @@
             getAllSession() {
                 axios.get(`${this.host}/index/api/getAllSession?secret=${this.secret}&` + Qs.stringify(this.getAllSession_queryparams)).then(resp => {
                     if (resp.status == 200) {
-                        if (resp.data.code == 0) this.sessionlist = resp.data.data;
+                        if (resp.data.code == 0) { this.sessionlist = resp.data.data; } else {
+                            this.$message({
+                                message: resp.data.msg,
+                                type: 'error'
+                            });
+                        }
                     }
                 }).catch(err => {
 
@@ -2323,9 +2372,7 @@
         line-height: 2em;
     }
 
-    .confs>.conf_item>.conf_item_label {
-
-    }
+    .confs>.conf_item>.conf_item_label {}
 
     .confs>.conf_item>.conf_item_value {
         width: 70%;
