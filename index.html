@@ -1691,9 +1691,8 @@
                 </div>
                 <div v-if="selectIndex==='4'">
                     <el-row :gutter="20">
-                        <el-col :span="16" :offset="4">
-
-                            <el-form>
+                        <el-col :span="10" :offset="1" style="border-radius: 4px; background-color: #545c6421;">
+                            <el-form style="margin: 10px;">
                                 <el-form-item label="api操作密钥" label-width="180px">
                                     <el-input v-model="secret" disabled></el-input>
                                 </el-form-item>
@@ -1702,7 +1701,6 @@
                                 </el-form-item>
                                 <el-form-item label="应用名" label-width="180px">
                                     <el-input v-model="addStreamProxy_params.app"></el-input>
-
                                 </el-form-item>
                                 <el-form-item label="流id" label-width="180px">
                                     <el-input v-model="addStreamProxy_params.stream"></el-input>
@@ -1816,7 +1814,50 @@
                                 <el-form-item label="">
                                     <el-input type="textarea" :rows="5" v-model="apiurl" readonly>
                                     </el-input>
-                                    <el-button type="primary" @click="addStreamProxy">提交</el-button>
+                                    <el-button type="primary" @click="addStreamProxy">提交拉流代理</el-button>
+                                </el-form-item>
+                            </el-form>
+                        </el-col>
+                        <el-col :span="10" :offset="2" style="border-radius: 4px; background-color: #545c6421;">
+                            <el-form style="margin: 10px;">
+                                <el-form-item label="api操作密钥" label-width="180px">
+                                    <el-input v-model="secret" disabled></el-input>
+                                </el-form-item>
+                                <el-form-item label="虚拟主机" label-width="180px">
+                                    <el-input v-model="addStreamPusherProxy_params.vhost"></el-input>
+                                </el-form-item>
+                                <el-form-item label="协议" label-width="180px">
+                                    <el-select v-model="addStreamPusherProxy_params.schema" style="width: 100%;">
+                                        <el-option label="RTSP" value="rtsp"> </el-option>
+                                        <el-option label="RTMP" value="rtmp"> </el-option>
+                                    </el-select>
+                                </el-form-item>
+                                <el-form-item label="应用名" label-width="180px">
+                                    <el-input v-model="addStreamPusherProxy_params.app"></el-input>
+                                </el-form-item>
+                                <el-form-item label="流id" label-width="180px">
+                                    <el-input v-model="addStreamPusherProxy_params.stream"></el-input>
+                                </el-form-item>
+                                <el-form-item label="转推地址" label-width="180px">
+                                    <el-input v-model="addStreamPusherProxy_params.dst_url"
+                                        placeholder="例如rtmp://live.hkstv.hk.lxdns.com/live/hks2"></el-input>
+                                </el-form-item>
+                                <el-form-item label="失败重试次数" label-width="180px">
+                                    <el-input v-model="addStreamPusherProxy_params.retry_count"></el-input>
+                                </el-form-item>
+                                <el-form-item label="推流方式" label-width="180px">
+                                    <el-select v-model="addStreamPusherProxy_params.rtp_type" style="width: 100%;">
+                                        <el-option label="TCP" value="0"> </el-option>
+                                        <el-option label="UDP" value="1"> </el-option>
+                                    </el-select>
+                                </el-form-item>
+                                <el-form-item label="超时时间" label-width="180px">
+                                    <el-input v-model="addStreamPusherProxy_params.timeout_sec"></el-input>
+                                </el-form-item>
+                                <el-form-item label="">
+                                    <el-input type="textarea" :rows="5" v-model="addStreamPusherProxy_apiurl" readonly>
+                                    </el-input>
+                                    <el-button type="primary" @click="addStreamPusherProxy">提交推流代理</el-button>
                                 </el-form-item>
                             </el-form>
                         </el-col>
@@ -1906,7 +1947,7 @@
                     stream: "test",
                     url: "",
                     retry_count: -1,
-                    rtp_type: 0,
+                    rtp_type: "0",
                     timeout_sec: 5,
                     enable_hls: false,
                     enable_hls_fmp4: false,
@@ -1928,6 +1969,16 @@
                     hls_save_path: "",
                     modify_stamp: "",
                     auto_close: false
+                },
+                addStreamPusherProxy_params: {
+                    vhost: "__defaultVhost__",
+                    app: "live",
+                    stream: "test",
+                    schema: "rtsp",
+                    dst_url: "",
+                    retry_count: -1,
+                    rtp_type: "0",
+                    timeout_sec: 5,
                 },
                 versioninfo: {
 
@@ -1977,6 +2028,18 @@
                 })
                 console.log(qs_str)
                 return `/index/api/addStreamProxy?secret=${this.secret}&${qs_str}`
+            },
+            addStreamPusherProxy_apiurl: function () {
+                const qs_str = Qs.stringify(this.addStreamPusherProxy_params, {
+                    filter: (key, value) => {
+                        if (value === "" || value === null || value === undefined) {
+                            return undefined; // 返回 undefined 将排除该属性
+                        }
+                        return value;
+                    }
+                })
+                console.log(qs_str)
+                return `/index/api/addStreamPusherProxy?secret=${this.secret}&${qs_str}`
             }
         },
         watch: {
@@ -2219,6 +2282,27 @@
             },
             addStreamProxy() {
                 axios.get(`${this.host}${this.apiurl}`).then(resp => {
+                    if (resp.status == 200) {
+                        if (resp.data.code == 0) {
+                            this.$message({
+                                message: '添加成功!',
+                                type: 'success'
+                            });
+                        }
+                        else {
+                            this.$message({
+                                message: resp.data.msg,
+                                type: 'error'
+                            });
+                        }
+                        this.getMediaList()
+                    }
+                }).catch(err => {
+
+                })
+            },
+            addStreamPusherProxy() {
+                axios.get(`${this.host}${this.addStreamPusherProxy_apiurl}`).then(resp => {
                     if (resp.status == 200) {
                         if (resp.data.code == 0) {
                             this.$message({
