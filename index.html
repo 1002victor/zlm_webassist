@@ -1779,6 +1779,20 @@
                                         </el-col>
                                     </el-row>
                                 </el-form-item>
+                                <el-form-item label="重试次数" label-width="180px">
+                                    <el-input v-model="addStreamProxy_params.retry_count"
+                                        placeholder="默认为-1无限重试"></el-input>
+                                </el-form-item>
+                                <el-form-item label="拉流方式" label-width="180px">
+                                    <el-select v-model="addStreamProxy_params.rtp_type" style="width: 100%;">
+                                        <el-option label="TCP" value="0"> </el-option>
+                                        <el-option label="UDP" value="1"> </el-option>
+                                        <el-option label="组播" value="2"> </el-option>
+                                    </el-select>
+                                </el-form-item>
+                                <el-form-item label="超时时间" label-width="180px">
+                                    <el-input v-model="addStreamProxy_params.timeout_sec"></el-input>
+                                </el-form-item>
                                 <el-form-item label="时间戳覆盖" label-width="180px">
                                     <el-select v-model="addStreamProxy_params.modify_stamp" style="width: 100%;">
                                         <el-option label="不开启" value=""> </el-option>
