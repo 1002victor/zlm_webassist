@@ -15,9 +15,9 @@
 
 ## 项目介绍
 
-本项目是[ZLMediakit](https://github.com/ZLMediaKit/ZLMediaKit)的 web 管理助手,方便日常调试管理使用。
+本项目是[ZLMediakit](https://github.com/ZLMediaKit/ZLMediaKit)的 web 管理助手,更改参数，添加代理，踢客户端这三个常用功能作为ZLM的调试助手非常方便，方便日常调试管理使用。
 
-代码超级简单，路过的前端大佬见笑了。
+仅有前端代码，无后端。 而且代码超级简单，路过的前端大佬见笑了。
 
 不建议部署在生产环境对外提供服务使用!!!
 
@@ -43,7 +43,9 @@
 
 - [x] 修改 server 配置
 
-- [x] 添加代理
+- [x] 添加推流代理
+
+- [x] 添加拉流代理
 
 待实现功能：
 
@@ -70,7 +72,7 @@
 
 
 - [ ] "/index/api/addFFmpegSource",
-- [ ] "/index/api/addStreamProxy",
+- [x] "/index/api/addStreamProxy",
 - [x] "/index/api/close_stream",
 - [x] "/index/api/close_streams",
 - [ ] "/index/api/delFFmpegSource",
@@ -99,7 +101,7 @@
 - [ ] "/index/api/startSendRtp",
 - [ ] "/index/api/stopSendRtp",
 - [x] "/index/api/getStatistic",
-- [ ] "/index/api/addStreamPusherProxy",
+- [x] "/index/api/addStreamPusherProxy",
 - [ ] "/index/api/delStreamPusherProxy",
 - [x] "/index/api/version",
 - [ ] "/index/api/getMediaPlayerList"
