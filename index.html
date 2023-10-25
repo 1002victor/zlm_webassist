@@ -158,7 +158,7 @@
                                     <el-checkbox label="simulcast" v-model="webrtc.simulcast"></el-checkbox>
                                     <el-checkbox label="useCamera" v-model="webrtc.useCamera"></el-checkbox>
                                     <el-checkbox label="audioEnable" v-model="webrtc.audioEnable"></el-checkbox>
-                                    <el-checkbox label="audioEnable" v-model="webrtc.videoEnable"></el-checkbox>
+                                    <el-checkbox label="videoEnable" v-model="webrtc.videoEnable"></el-checkbox>
                                 </el-form-item>
                                 <el-form-item label="method">
                                     <el-radio-group v-model="webrtc.type">
@@ -1645,7 +1645,7 @@
                                     <div class="confs">
                                         <div class="conf_item">
                                             <div class="conf_item_label">
-                                                保留磁盘切片数
+                                                延迟缓存的估算参数
                                             </div>
                                             <div class="conf_item_value">
                                                 <el-input type="text" v-model="serverConfig.srt.latencyMul"></el-input>
@@ -1653,7 +1653,7 @@
                                         </div>
                                         <div class="conf_item">
                                             <div class="conf_item_label">
-                                                保留磁盘切片数
+                                                包缓存的大小
                                             </div>
                                             <div class="conf_item_value">
                                                 <el-input type="text" v-model="serverConfig.srt.pktBufSize"></el-input>
@@ -1661,7 +1661,7 @@
                                         </div>
                                         <div class="conf_item">
                                             <div class="conf_item_label">
-                                                保留磁盘切片数
+                                                端口
                                             </div>
                                             <div class="conf_item_value">
                                                 <el-input type="text" v-model="serverConfig.srt.port"></el-input>
@@ -1669,7 +1669,7 @@
                                         </div>
                                         <div class="conf_item">
                                             <div class="conf_item_label">
-                                                保留磁盘切片数
+                                                播放推流、播放超时
                                             </div>
                                             <div class="conf_item_value">
                                                 <el-input type="text" v-model="serverConfig.srt.timeoutSec"></el-input>
@@ -1690,13 +1690,127 @@
                     </el-form>
                 </div>
                 <div v-if="selectIndex==='4'">
-                    <el-empty description="即将支持，敬请期待"></el-empty>
-                    <el-skeleton :rows="6" animated />
+                    <el-row :gutter="20">
+                        <el-col :span="16" :offset="4">
 
+                            <el-form>
+                                <el-form-item label="api操作密钥" label-width="180px">
+                                    <el-input v-model="secret" disabled></el-input>
+                                </el-form-item>
+                                <el-form-item label="虚拟主机" label-width="180px">
+                                    <el-input v-model="addStreamProxy_params.vhost"></el-input>
+                                </el-form-item>
+                                <el-form-item label="应用名" label-width="180px">
+                                    <el-input v-model="addStreamProxy_params.app"></el-input>
+
+                                </el-form-item>
+                                <el-form-item label="流id" label-width="180px">
+                                    <el-input v-model="addStreamProxy_params.stream"></el-input>
+                                </el-form-item>
+                                <el-form-item label="拉流地址" label-width="180px">
+                                    <el-input v-model="addStreamProxy_params.url"
+                                        placeholder="例如rtmp://live.hkstv.hk.lxdns.com/live/hks2"></el-input>
+                                </el-form-item>
+                                <el-form-item label="" label-width="180px">
+                                    <el-row style="text-align: left;">
+                                        <el-col :span="8">
+                                            <el-checkbox
+                                                v-model="addStreamProxy_params.enable_hls">是否转换成hls-mpeg</el-checkbox>
+                                        </el-col>
+                                        <el-col :span="8">
+                                            <el-checkbox
+                                                v-model="addStreamProxy_params.enable_hls_fmp4">是否转换成hls-fmp4协议</el-checkbox>
+                                        </el-col>
+                                        <el-col :span="8">
+                                            <el-checkbox
+                                                v-model="addStreamProxy_params.enable_mp4">是否允许mp4录制</el-checkbox>
+                                        </el-col>
+                                        <el-col :span="8">
+                                            <el-checkbox
+                                                v-model="addStreamProxy_params.enable_rtsp">是否转rtsp协议</el-checkbox>
+                                        </el-col>
+                                        <el-col :span="8">
+                                            <el-checkbox
+                                                v-model="addStreamProxy_params.enable_rtmp">是否转rtmp/flv协议</el-checkbox>
+                                        </el-col>
+                                        <el-col :span="8">
+                                            <el-checkbox
+                                                v-model="addStreamProxy_params.enable_ts">是否转http-ts/ws-ts协议</el-checkbox>
+                                        </el-col>
+                                        <el-col :span="8">
+                                            <el-checkbox
+                                                v-model="addStreamProxy_params.enable_fmp4">是否转http-fmp4/ws-fmp4协议</el-checkbox>
+                                        </el-col>
+                                        <el-col :span="8">
+                                            <el-checkbox
+                                                v-model="addStreamProxy_params.hls_demand">hls协议是否有人观看才生成</el-checkbox>
+                                        </el-col>
+                                        <el-col :span="8">
+                                            <el-checkbox
+                                                v-model="addStreamProxy_params.rtsp_demand">rtsp协议是否有人观看才生成</el-checkbox>
+                                        </el-col>
+                                        <el-col :span="8">
+                                            <el-checkbox
+                                                v-model="addStreamProxy_params.rtmp_demand">rtmp协议是否有人观看才生成</el-checkbox>
+                                        </el-col>
+                                        <el-col :span="8">
+                                            <el-checkbox
+                                                v-model="addStreamProxy_params.ts_demand">ts协议是否有人观看才生成</el-checkbox>
+                                        </el-col>
+                                        <el-col :span="8">
+                                            <el-checkbox
+                                                v-model="addStreamProxy_params.fmp4_demand">fmp4协议是否有人观看才生成</el-checkbox>
+                                        </el-col>
+                                        <el-col :span="8">
+                                            <el-checkbox
+                                                v-model="addStreamProxy_params.enable_audio">转协议时是否开启音频</el-checkbox>
+                                        </el-col>
+                                        <el-col :span="8">
+                                            <el-checkbox
+                                                v-model="addStreamProxy_params.add_mute_audio">转协议时，无音频是否添加静音aac音频</el-checkbox>
+                                        </el-col>
+                                        <el-col :span="8">
+                                            <el-checkbox
+                                                v-model="addStreamProxy_params.mp4_as_player">MP4录制是否当作观看者参与播放人数计数</el-checkbox>
+                                        </el-col>
+                                        <el-col :span="8">
+                                            <el-checkbox
+                                                v-model="addStreamProxy_params.auto_close">无人观看是否自动关闭流(不触发无人观看hook)</el-checkbox>
+                                        </el-col>
+                                    </el-row>
+                                </el-form-item>
+                                <el-form-item label="时间戳覆盖" label-width="180px">
+                                    <el-select v-model="addStreamProxy_params.modify_stamp" style="width: 100%;">
+                                        <el-option label="不开启" value=""> </el-option>
+                                        <el-option label="绝对时间戳" value="0"> </el-option>
+                                        <el-option label="系统时间戳" value="1"> </el-option>
+                                        <el-option label="相对时间戳" value="2"> </el-option>
+                                    </el-select>
+                                </el-form-item>
+                                <el-form-item label="mp4录制文件保存根目录" label-width="180px">
+                                    <el-input v-model="addStreamProxy_params.mp4_save_path"
+                                        placeholder="mp4录制文件保存根目录，置空使用默认"></el-input>
+                                </el-form-item>
+                                <el-form-item label="mp4录制切片大小" label-width="180px">
+                                    <el-input v-model="addStreamProxy_params.mp4_max_second"
+                                        placeholder="mp4录制切片大小，单位秒"></el-input>
+                                </el-form-item>
+                                <el-form-item label="hls文件保存保存根目录" label-width="180px">
+                                    <el-input v-model="addStreamProxy_params.hls_save_path"
+                                        placeholder="hls文件保存保存根目录，置空使用默认"></el-input>
+                                </el-form-item>
+                                <el-form-item label="">
+                                    <el-input type="textarea" :rows="5" v-model="apiurl" readonly>
+                                    </el-input>
+                                    <el-button type="primary" @click="addStreamProxy">提交</el-button>
+                                </el-form-item>
+                            </el-form>
+                        </el-col>
+                    </el-row>
                 </div>
             </el-main>
             <el-footer>
-                <span>主分支：{{ versioninfo.branchName }}</span>
+                <span>分支：{{ versioninfo.branchName }}</span>
                 <span>构建时间{{ versioninfo.buildTime }}</span>
                 <span>版本{{ versioninfo.commitHash }}</span>
             </el-footer>
@@ -1731,6 +1845,7 @@
                 //获取版本和配置信息
                 this.version();
                 this.getServerConfig();
+                this.getApiList();
             }
 
             //获取支持的分辨率
@@ -1771,6 +1886,35 @@
                     app: null,
                     stream: null
                 },
+                addStreamProxy_params: {
+                    vhost: "__defaultVhost__",
+                    app: "live",
+                    stream: "test",
+                    url: "",
+                    retry_count: -1,
+                    rtp_type: 0,
+                    timeout_sec: 5,
+                    enable_hls: false,
+                    enable_hls_fmp4: false,
+                    enable_mp4: false,
+                    enable_rtsp: false,
+                    enable_rtmp: false,
+                    enable_ts: false,
+                    enable_fmp4: false,
+                    hls_demand: false,
+                    rtsp_demand: false,
+                    rtmp_demand: false,
+                    ts_demand: false,
+                    fmp4_demand: false,
+                    enable_audio: false,
+                    add_mute_audio: false,
+                    mp4_save_path: "",
+                    mp4_max_second: 10,
+                    mp4_as_player: false,
+                    hls_save_path: "",
+                    modify_stamp: "",
+                    auto_close: false
+                },
                 versioninfo: {
 
                 },
@@ -1808,7 +1952,18 @@
             }
         },
         computed: {
-
+            apiurl: function () {
+                const qs_str = Qs.stringify(this.addStreamProxy_params, {
+                    filter: (key, value) => {
+                        if (value === "" || value === null || value === undefined) {
+                            return undefined; // 返回 undefined 将排除该属性
+                        }
+                        return value;
+                    }
+                })
+                console.log(qs_str)
+                return `/index/api/addStreamProxy?secret=${this.secret}&${qs_str}`
+            }
         },
         watch: {
             'webrtc.type'(newv, oldv) {
@@ -2048,6 +2203,27 @@
                 }
                 console.log(key, keyPath);
             },
+            addStreamProxy() {
+                axios.get(`${this.host}${this.apiurl}`).then(resp => {
+                    if (resp.status == 200) {
+                        if (resp.data.code == 0) {
+                            this.$message({
+                                message: '添加成功!',
+                                type: 'success'
+                            });
+                        }
+                        else {
+                            this.$message({
+                                message: resp.data.msg,
+                                type: 'error'
+                            });
+                        }
+                        this.getMediaList()
+                    }
+                }).catch(err => {
+
+                })
+            },
             close_stream(index, row) {
                 console.log(index, row);
                 const data = {
@@ -2099,6 +2275,16 @@
                 }).catch(err => {
 
                 })
+            },
+            getApiList() {
+                axios.get(`${this.host}/index/api/getApiList?secret=${this.secret}`).then(resp => {
+                    if (resp.status == 200) {
+                        console.log(resp.data.data)
+                    }
+                }).catch(err => {
+
+                })
+
             },
             getServerConfig() {
                 axios.get(`${this.host}/index/api/getServerConfig?secret=${this.secret}`).then(resp => {
