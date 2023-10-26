@@ -3,8 +3,11 @@
 
 <head>
     <meta charset="UTF-8">
+    <link rel="icon" type="image/x-icon" href="./assets/favicon.ico">
     <!-- import CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <link rel="stylesheet" href="./assets/elementui/index.css">
+    <!-- import JS -->
+    <script src="./js/utils.js"></script>
 </head>
 
 <body>
@@ -48,7 +51,7 @@
                         </el-col>
                     </el-row>
                     <el-divider><i class="el-icon-s-data"></i></el-divider>
-                    <el-table :data="medialist">
+                    <el-table :data="medialist" empty-text="暂无活动流数据">
                         <el-table-column prop="vhost" label="主机名"> </el-table-column>
                         <el-table-column prop="app" label="应用名"> </el-table-column>
                         <el-table-column prop="stream" label="流id"> </el-table-column>
@@ -71,7 +74,7 @@
                             <el-table-column prop="originSock.peer_port" label="peer_port"> </el-table-column>
                         </el-table-column>
 
-                        <el-table-column type="expand" label="音视频轨道">
+                        <el-table-column type="expand" label="音视频轨道" empty-text="无音视频轨道">
                             <template slot-scope="scope">
                                 <el-table v-if="scope.row.tracks.length > 0" :data="scope.row.tracks">
                                     <el-table-column prop="codec_type" label="编码类型">
@@ -116,7 +119,7 @@
                     </el-table>
 
                     <el-divider><i class="el-icon-connection"></i></el-divider>
-                    <el-table :data="sessionlist">
+                    <el-table :data="sessionlist" empty-text="暂无连接数据">
                         <el-table-column prop="id" label="id"></el-table-column>
                         <el-table-column prop="local_ip" label="本机网卡ip"></el-table-column>
                         <el-table-column prop="local_port" label="本机端口号"></el-table-column>
@@ -1872,11 +1875,11 @@
         </el-container>
     </div>
 </body>
-<script src="https://unpkg.com/vue@2/dist/vue.js"></script>
-<script src="https://unpkg.com/element-ui/lib/index.js"></script>
-<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="./js/vue.min.js"></script>
+<script src="./assets/elementui/index.js"></script>
+<script src="./js/axios.min.js"></script>
 <script src="./js/qs.js"></script>
-<script src="https://cdn.staticfile.org/echarts/5.4.3/echarts.min.js"></script>
+<script src="./js/echarts.min.js"></script>
 <script src="./js/ZLMRTCClient.js"></script>
 
 
@@ -2182,78 +2185,7 @@
             },
 
             onSubmit() {
-                var confs = this.findDifferentProperties(this.serverConfig_bak, this.serverConfig)
-                console.log(confs)
-                const flattened = this.flattenObject(confs);
-                const queryString = Object.keys(flattened).map(key => `${key}=${flattened[key]}`).join('&');
-                if (queryString == "") {
-                    this.$message({
-                        message: '没有参数被修改',
-                        type: 'info'
-                    });
-                    return
-                }
-                const update_counts = ((queryString.match(/&/g) || []).length + 1)
-
-                this.setServerConfig(queryString).then(resp => {
-                    if (resp.status == 200) {
-                        if (update_counts == resp.data.changed) {
-                            this.$message({
-                                message: `保存成功！共修改${resp.data.changed}个参数`,
-                                type: 'success'
-                            });
-                        }
-                        else {
-                            this.$message({
-                                message: `存在参数修改失败，共修改${resp.data.changed}个参数，请检查后重试！`,
-                                type: 'error'
-                            });
-                        }
-                    }
-                    this.getServerConfig()
-                }).catch(err => {
-
-                })
-            },
-            flattenObject(obj, parentKey = '') {
-                const result = {};
-
-                for (const key in obj) {
-                    if (obj.hasOwnProperty(key)) {
-                        const newKey = parentKey ? `${parentKey}.${key}` : key;
-
-                        if (typeof obj[key] === 'object' && !Array.isArray(obj[key])) {
-                            const flattened = this.flattenObject(obj[key], newKey);
-                            Object.assign(result, flattened);
-                        } else {
-                            result[newKey] = obj[key];
-                        }
-                    }
-                }
-
-                return result;
-            },
-            findDifferentProperties(objA, objB, prefix = '') {
-                const differentProps = {};
-
-                for (const key in objA) {
-                    if (objA.hasOwnProperty(key)) {
-                        const propPath = prefix ? `${prefix}.${key}` : key;
-                        if (typeof objA[key] === 'object' && typeof objB[key] === 'object') {
-                            const nestedDifferences = this.findDifferentProperties(objA[key], objB[key], propPath);
-                            if (Object.keys(nestedDifferences).length > 0) {
-                                differentProps[key] = nestedDifferences;
-                            }
-                        } else if (objA[key] !== objB[key]) {
-                            // differentProps[key] = {
-                            //     oldValue: objA[key],
-                            //     newValue: objB[key],
-                            // };
-                            differentProps[key] = objB[key];
-                        }
-                    }
-                }
-                return differentProps;
+                this.setServerConfig()
             },
 
             handleSelect(key, keyPath) {
@@ -2280,48 +2212,47 @@
                 }
                 console.log(key, keyPath);
             },
-            addStreamProxy() {
-                axios.get(`${this.host}${this.apiurl}`).then(resp => {
-                    if (resp.status == 200) {
-                        if (resp.data.code == 0) {
+            async performRequest(url, successMessage, errorMessage, callback) {
+                try {
+                    const response = await axios.get(url);
+                    if (response.status === 200) {
+                        if (response.data.code === 0) {
+                            if (successMessage) {
+                                this.$message({
+                                    message: successMessage,
+                                    type: 'success',
+                                });
+                            }
+                            if (callback) {
+                                callback(response);
+                            }
+                        } else {
                             this.$message({
-                                message: '添加成功!',
-                                type: 'success'
+                                message: errorMessage || response.data.msg,
+                                type: 'error',
                             });
                         }
-                        else {
-                            this.$message({
-                                message: resp.data.msg,
-                                type: 'error'
-                            });
-                        }
-                        this.getMediaList()
                     }
-                }).catch(err => {
+                    else {
+                        this.$message({
+                            message: `response.status:${response.status}`,
+                            type: 'error',
+                        });
 
-                })
+                    }
+                } catch (err) {
+                    // 错误处理代码
+                }
+            },
+            addStreamProxy() {
+                const url = `${this.host}${this.apiurl}`;
+                this.performRequest(url, '添加成功!', '', () => this.getMediaList());
             },
             addStreamPusherProxy() {
-                axios.get(`${this.host}${this.addStreamPusherProxy_apiurl}`).then(resp => {
-                    if (resp.status == 200) {
-                        if (resp.data.code == 0) {
-                            this.$message({
-                                message: '添加成功!',
-                                type: 'success'
-                            });
-                        }
-                        else {
-                            this.$message({
-                                message: resp.data.msg,
-                                type: 'error'
-                            });
-                        }
-                        this.getMediaList()
-                    }
-                }).catch(err => {
-
-                })
+                const url = `${this.host}${this.addStreamPusherProxy_apiurl}`;
+                this.performRequest(url, '添加成功!', '', () => this.getMediaList());
             },
+
             close_stream(index, row) {
                 console.log(index, row);
                 const data = {
@@ -2332,278 +2263,207 @@
                     stream: row.stream,
                     force: true
                 }
-                axios.get(`${this.host}/index/api/close_streams?${Qs.stringify(data)}`).then(resp => {
-                    if (resp.status == 200) {
-                        if (resp.data.code == 0) {
-                            this.$message({
-                                message: '关闭成功!',
-                                type: 'success'
-                            });
-                        }
-                        else {
-                            this.$message({
-                                message: resp.data.msg,
-                                type: 'success'
-                            });
-                        }
-                        this.getMediaList()
-                    }
-                }).catch(err => {
-
-                })
+                const url = `${this.host}/index/api/close_streams?${Qs.stringify(data)}`;
+                this.performRequest(url, '关闭成功!', '', () => this.getMediaList());
             },
+
             kick_session(index, row) {
                 console.log(index, row);
-                axios.get(`${this.host}/index/api/kick_session?secret=${this.secret}&id=${row.id}`).then(resp => {
-                    if (resp.status == 200) {
-                        if (resp.data.code == 0) {
-                            this.$message({
-                                message: '关闭成功!',
-                                type: 'success'
-                            });
-                        }
-                        else {
-                            this.$message({
-                                message: resp.data.msg,
-                                type: 'error'
-                            });
-                        }
-                        this.getAllSession()
-                    }
-                }).catch(err => {
-
-                })
+                const url = `${this.host}/index/api/kick_session?secret=${this.secret}&id=${row.id}`;
+                this.performRequest(url, '关闭成功!', '', () => this.getAllSession());
             },
+
             getApiList() {
-                axios.get(`${this.host}/index/api/getApiList?secret=${this.secret}`).then(resp => {
-                    if (resp.status == 200) {
-                        console.log(resp.data.data)
-                    }
-                }).catch(err => {
-
-                })
-
+                const url = `${this.host}/index/api/getApiList?secret=${this.secret}`;
+                this.performRequest(url, '', '', (response) => {
+                    console.log(response.data.data);
+                });
             },
+
             getServerConfig() {
-                axios.get(`${this.host}/index/api/getServerConfig?secret=${this.secret}`).then(resp => {
-                    if (resp.status == 200) {
-                        if (resp.data.code == 0) {
-                            var data = {}
-                            var serverConfig = resp.data.data[0]
-                            const serverConfigKeys = Object.keys(serverConfig);
-                            for (const key of serverConfigKeys) {
-                                const [category, subKey] = key.split('.');
-                                if (!data[category]) {
-                                    data[category] = {};
-                                }
-                                data[category][subKey] = serverConfig[key];
-                            }
-                            this.serverConfig = data;
-                            this.serverConfig_bak = JSON.parse(JSON.stringify(data));
+                const url = `${this.host}/index/api/getServerConfig?secret=${this.secret}`;
+                this.performRequest(url, '', '', (response) => {
+                    var data = {}
+                    var serverConfig = response.data.data[0]
+                    console.log(serverConfig);
+                    const serverConfigKeys = Object.keys(serverConfig);
+                    for (const key of serverConfigKeys) {
+                        const [category, subKey] = key.split('.');
+                        if (!data[category]) {
+                            data[category] = {};
                         }
-                        else {
-                            this.$message({
-                                message: resp.data.msg,
-                                type: 'error'
-                            });
-                        };
+                        data[category][subKey] = serverConfig[key];
                     }
-                }).catch(err => {
+                    this.serverConfig = data;
+                    this.serverConfig_bak = JSON.parse(JSON.stringify(data));
+                });
+            },
 
+            setServerConfig() {
+                var confs = findDifferentProperties(this.serverConfig_bak, this.serverConfig)
+                console.log(confs)
+                const flattened = flattenObject(confs);
+                const queryString = Object.keys(flattened).map(key => `${key}=${flattened[key]}`).join('&');
+                if (queryString == "") {
+                    this.$message({
+                        message: '没有参数被修改',
+                        type: 'info'
+                    });
+                    return
+                }
+                const update_counts = ((queryString.match(/&/g) || []).length + 1)
+
+                const url = `${this.host}/index/api/setServerConfig?secret=${this.secret}&${queryString}`;
+
+                this.performRequest(url, '', '', resp => {
+                    if (update_counts == resp.data.changed) {
+                        this.$message({
+                            message: `保存成功！共修改${resp.data.changed}个参数`,
+                            type: 'success'
+                        });
+                    }
+                    else {
+                        this.$message({
+                            message: `存在参数修改失败，共修改${resp.data.changed}个参数，请检查后重试！`,
+                            type: 'error'
+                        });
+                    }
+                    this.getServerConfig()
                 })
             },
-            setServerConfig(queryString) {
-                return axios.get(`${this.host}/index/api/setServerConfig?secret=${this.secret}&${queryString}`)
-            },
+
             getThreadsLoad() {
-                axios.get(`${this.host}/index/api/getThreadsLoad?secret=${this.secret}`).then(resp => {
-                    if (resp.status == 200) {
-                        if (resp.data.code == 0) {
-                            this.threadsLoad = resp.data.data;
-                            var delays = this.threadsLoad.map(item => item.delay);
-                            var loads = this.threadsLoad.map(item => item.load);
-                            this.chart3.setOption({
-                                title: {
-                                    text: 'ThreadsLoad'
-                                },
-                                tooltip: {},
-                                legend: {
-                                    data: ['延迟', '负载']
-                                },
-                                xAxis: {
-                                    data: Array.from({ length: this.threadsLoad.length }, (_, i) => i + 1)
-                                },
-                                yAxis: {
-                                    max: 100
-                                },
-                                series: [{
-                                    name: '延迟',
-                                    type: 'bar',
+                const url = `${this.host}/index/api/getThreadsLoad?secret=${this.secret}`;
+                this.performRequest(url, "", "", resp => {
+                    this.threadsLoad = resp.data.data;
+                    var delays = this.threadsLoad.map(item => item.delay);
+                    var loads = this.threadsLoad.map(item => item.load);
+                    this.chart3.setOption({
+                        title: {
+                            text: 'ThreadsLoad'
+                        },
+                        tooltip: {},
+                        legend: {
+                            data: ['延迟', '负载']
+                        },
+                        xAxis: {
+                            data: Array.from({ length: this.threadsLoad.length }, (_, i) => i + 1)
+                        },
+                        yAxis: {
+                            max: 100
+                        },
+                        series: [{
+                            name: '延迟',
+                            type: 'bar',
 
-                                    data: delays
-                                },
-                                {
-                                    name: '负载',
-                                    type: 'bar',
-                                    showBackground: true,
-                                    label: {
-                                        normal: {
-                                            show: true, // 显示数据标签
-                                            position: 'top' // 数据标签位置，可以是 'top', 'insideTop', 'inside', 'insideBottom', 'bottom'
-                                        }
-                                    },
-                                    data: loads
-                                }]
-                            })
-                        }
-                        else {
-                            this.$message({
-                                message: resp.data.msg,
-                                type: 'error'
-                            });
-                        }
-                    }
-                }).catch(err => {
+                            data: delays
+                        },
+                        {
+                            name: '负载',
+                            type: 'bar',
+                            showBackground: true,
+                            label: {
+                                normal: {
+                                    show: true, // 显示数据标签
+                                    position: 'top' // 数据标签位置，可以是 'top', 'insideTop', 'inside', 'insideBottom', 'bottom'
+                                }
+                            },
+                            data: loads
+                        }]
+                    })
 
                 })
             },
+
             getWorkThreadsLoad() {
-                axios.get(`${this.host}/index/api/getWorkThreadsLoad?secret=${this.secret}`).then(resp => {
-                    if (resp.status == 200) {
-                        if (resp.data.code == 0) {
-                            this.workThreadsLoad = resp.data.data;
-                            var delays = this.workThreadsLoad.map(item => item.delay);
-                            var loads = this.workThreadsLoad.map(item => item.load);
-                            this.chart2.setOption({
-                                title: {
-                                    text: 'WorkThreadsLoad'
-                                },
-                                tooltip: {},
-                                legend: {
-                                    data: ['延迟', '负载']
-                                },
-                                xAxis: {
-                                    data: Array.from({ length: this.workThreadsLoad.length }, (_, i) => i + 1)
-                                },
-                                yAxis: {
-                                    max: 100
-                                },
+                const url = `${this.host}/index/api/getWorkThreadsLoad?secret=${this.secret}`;
+                this.performRequest(url, "", "", resp => {
+                    this.workThreadsLoad = resp.data.data;
+                    var delays = this.workThreadsLoad.map(item => item.delay);
+                    var loads = this.workThreadsLoad.map(item => item.load);
+                    this.chart2.setOption({
+                        title: {
+                            text: 'WorkThreadsLoad'
+                        },
+                        tooltip: {},
+                        legend: {
+                            data: ['延迟', '负载']
+                        },
+                        xAxis: {
+                            data: Array.from({ length: this.workThreadsLoad.length }, (_, i) => i + 1)
+                        },
+                        yAxis: {
+                            max: 100
+                        },
 
-                                series: [{
-                                    name: '延迟',
-                                    type: 'bar',
-                                    data: delays
-                                },
-                                {
-                                    name: '负载',
-                                    type: 'bar',
-                                    showBackground: true,
-                                    label: {
-                                        normal: {
-                                            show: true, // 显示数据标签
-                                            position: 'top' // 数据标签位置，可以是 'top', 'insideTop', 'inside', 'insideBottom', 'bottom'
-                                        }
-                                    },
-                                    data: loads
-                                }]
-                            })
-                        }
-                        else {
-                            this.$message({
-                                message: resp.data.msg,
-                                type: 'error'
-                            });
-                        }
-                    }
-
-                }).catch(err => {
-
+                        series: [{
+                            name: '延迟',
+                            type: 'bar',
+                            data: delays
+                        },
+                        {
+                            name: '负载',
+                            type: 'bar',
+                            showBackground: true,
+                            label: {
+                                normal: {
+                                    show: true, // 显示数据标签
+                                    position: 'top' // 数据标签位置，可以是 'top', 'insideTop', 'inside', 'insideBottom', 'bottom'
+                                }
+                            },
+                            data: loads
+                        }]
+                    })
                 })
             },
+
             getStatistic() {
-                axios.get(`${this.host}/index/api/getStatistic?secret=${this.secret}`).then(resp => {
-                    if (resp.status == 200) {
-                        if (resp.data.code == 0) {
-                            this.statistic = resp.data.data;
-                            this.chart1.setOption({
-                                title: {
-                                    text: 'Statistic'
-                                },
-                                tooltip: {},
-                                legend: {},
-                                xAxis: {
-                                    data: Object.keys(this.statistic),
-                                    axisLabel: {
-                                        rotate: 45 // 设置X轴刻度标签旋转角度为45度
-                                    }
-                                },
-                                yAxis: {},
-                                series: [{
-                                    type: 'bar',
-                                    data: Object.values(this.statistic)
-                                }]
-                            })
-                        }
-                        else {
-                            this.$message({
-                                message: resp.data.msg,
-                                type: 'error'
-                            });
-                        }
-                    }
-
-                }).catch(err => {
-
+                const url = `${this.host}/index/api/getStatistic?secret=${this.secret}`;
+                this.performRequest(url, "", "", resp => {
+                    this.statistic = resp.data.data;
+                    this.chart1.setOption({
+                        title: {
+                            text: 'Statistic'
+                        },
+                        tooltip: {},
+                        legend: {},
+                        xAxis: {
+                            data: Object.keys(this.statistic),
+                            axisLabel: {
+                                rotate: 45 // 设置X轴刻度标签旋转角度为45度
+                            }
+                        },
+                        yAxis: {},
+                        series: [{
+                            type: 'bar',
+                            data: Object.values(this.statistic)
+                        }]
+                    })
                 })
             },
+
             version() {
-                axios.get(`${this.host}/index/api/version?secret=${this.secret}`).then(resp => {
-                    if (resp.status == 200) {
-                        if (resp.data.code == 0) {
-                            this.versioninfo = resp.data.data;
-                            console.log(this.versioninfo)
-                        } else {
-                            this.$message({
-                                message: resp.data.msg,
-                                type: 'error'
-                            });
-                        }
-                    }
-                }).catch(err => {
-
+                const url = `${this.host}/index/api/version?secret=${this.secret}`;
+                this.performRequest(url, "", "", resp => {
+                    this.versioninfo = resp.data.data;
+                    console.log(this.versioninfo)
                 })
             },
+
             getMediaList() {
-                axios.get(`${this.host}/index/api/getMediaList?secret=${this.secret}&` + Qs.stringify(this.getMediaList_queryparams)).then(resp => {
-                    if (resp.status == 200) {
-                        if (resp.data.code == 0) {
-                            this.medialist = resp.data.data;
-                        }
-                        else {
-                            this.$message({
-                                message: resp.data.msg,
-                                type: 'error'
-                            });
-                        }
-                    }
-                }).catch(err => {
-
+                const url = `${this.host}/index/api/getMediaList?secret=${this.secret}&` + Qs.stringify(this.getMediaList_queryparams);
+                this.performRequest(url, "", "", resp => {
+                    if (resp.data.data) this.medialist = resp.data.data;
                 })
             },
+
             getAllSession() {
-                axios.get(`${this.host}/index/api/getAllSession?secret=${this.secret}&` + Qs.stringify(this.getAllSession_queryparams)).then(resp => {
-                    if (resp.status == 200) {
-                        if (resp.data.code == 0) { this.sessionlist = resp.data.data; } else {
-                            this.$message({
-                                message: resp.data.msg,
-                                type: 'error'
-                            });
-                        }
-                    }
-                }).catch(err => {
-
+                const url = `${this.host}/index/api/getAllSession?secret=${this.secret}&` + Qs.stringify(this.getAllSession_queryparams);
+                this.performRequest(url, "", "", resp => {
+                    this.sessionlist = resp.data.data;
                 })
             },
+
             update_status() {
                 this.getThreadsLoad();
                 this.getWorkThreadsLoad();
