@@ -2484,6 +2484,7 @@
                 const url = `${this.host}/index/api/getMediaList?secret=${this.secret}&` + Qs.stringify(this.getMediaList_queryparams);
                 this.performRequest(url, "", "", resp => {
                     if (resp.data.data) this.medialist = resp.data.data;
+                    else this.medialist = [];
                 })
             },
 
