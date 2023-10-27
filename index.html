@@ -14,16 +14,28 @@
     <div id="app">
         <el-container>
             <el-header>
-                <el-menu :default-active="selectIndex" class="el-menu-demo" mode="horizontal" @select="handleSelect"
-                    background-color="#545c64" text-color="#fff" active-text-color="#ffd04b">
-                    <el-menu-item index="1" disable> <template slot="title">
-                            <el-image style="height: 100%" src="./assets/logo.png" fit="fill"></el-image>
-                        </template>
-                    </el-menu-item>
-                    <el-menu-item index="2">WebRTC测试</el-menu-item>
-                    <el-menu-item index="4">代理测试</el-menu-item>
-                    <el-menu-item index="3">服务器配置</el-menu-item>
-                </el-menu>
+                <el-row>
+                    <el-col :xs="23" :sm="23" :md="23" :lg="23" :xl="23">
+                        <el-menu :default-active="selectIndex" class="el-menu-demo" mode="horizontal"
+                            @select="handleSelect" background-color="#545c64" text-color="#fff"
+                            active-text-color="#ffd04b">
+                            <el-menu-item index="1" disable> <template slot="title">
+                                    <el-image style="height: 100%" src="./assets/logo.png" fit="fill"></el-image>
+                                </template>
+                            </el-menu-item>
+                            <el-menu-item index="2">WebRTC测试</el-menu-item>
+                            <el-menu-item index="4">代理测试</el-menu-item>
+                            <el-menu-item index="3">服务器配置</el-menu-item>
+                        </el-menu>
+                    </el-col>
+                    <el-col :xs="1" :sm="1" :md="1" :lg="1" :xl="1">
+                        <el-popconfirm confirm-button-text='好的' cancel-button-text='不用了' icon="el-icon-info"
+                            icon-color="red" title="这只有Daemon方式才能重启，否则是直接关闭！确定重启吗？" @confirm="restartServer">
+                            <el-button type="danger" plain slot="reference" icon="el-icon-refresh-right">重启</el-button>
+                        </el-popconfirm>
+                    </el-col>
+                </el-row>
+
             </el-header>
             <el-main>
                 <div v-show="selectIndex==='1'">
@@ -51,21 +63,27 @@
                         </el-col>
                     </el-row>
                     <el-divider><i class="el-icon-s-data"></i></el-divider>
+                    <div style="width: 100%;text-align: right;">
+                        <el-button type="primary" icon="el-icon-refresh" @click="getMediaList">刷新</el-button>
+                    </div>
+
                     <el-table :data="medialist" empty-text="暂无活动流数据">
                         <el-table-column prop="vhost" label="主机名"> </el-table-column>
-                        <el-table-column prop="app" label="应用名"> </el-table-column>
+                        <el-table-column sortable prop="app" label="应用名"> </el-table-column>
                         <el-table-column prop="stream" label="流id"> </el-table-column>
-                        <el-table-column prop="schema" label="协议"> </el-table-column>
+                        <el-table-column sortable prop="schema" label="协议"> </el-table-column>
                         <el-table-column prop="aliveSecond" label="存活时间"> </el-table-column>
                         <el-table-column prop="bytesSpeed" label="数据产生速度"> </el-table-column>
                         <el-table-column prop="createStamp" label="时间戳"> </el-table-column>
                         <el-table-column prop="isRecordingHLS" label="是否录制HLS"> </el-table-column>
                         <el-table-column prop="isRecordingMP4" label="是否录制MP4"> </el-table-column>
-                        <el-table-column prop="originType" label="源类型"> </el-table-column>
+                        <el-table-column prop="originType" label="源类型">
+
+                        </el-table-column>
                         <el-table-column prop="originTypeStr" label="originTypeStr"> </el-table-column>
                         <el-table-column prop="originUrl" label="源的url"> </el-table-column>
                         <el-table-column prop="readerCount" label="本协议观看人数"> </el-table-column>
-                        <el-table-column prop="totalReaderCount" label="观看总人数"> </el-table-column>
+                        <el-table-column sortable prop="totalReaderCount" label="观看总人数"> </el-table-column>
                         <el-table-column label="客户端和服务器网络信息">
                             <el-table-column prop="originSock.identifier" label="identifier"> </el-table-column>
                             <el-table-column prop="originSock.local_ip" label="local_ip"> </el-table-column>
@@ -119,6 +137,10 @@
                     </el-table>
 
                     <el-divider><i class="el-icon-connection"></i></el-divider>
+                    <div style="width: 100%;text-align: right;">
+                        <el-button type="primary" icon="el-icon-refresh" @click="getAllSession">刷新</el-button>
+                    </div>
+
                     <el-table :data="sessionlist" empty-text="暂无连接数据">
                         <el-table-column prop="id" label="id"></el-table-column>
                         <el-table-column prop="local_ip" label="本机网卡ip"></el-table-column>
@@ -1869,8 +1891,8 @@
             </el-main>
             <el-footer>
                 <span>分支：{{ versioninfo.branchName }}</span>
-                <span>构建时间{{ versioninfo.buildTime }}</span>
-                <span>版本{{ versioninfo.commitHash }}</span>
+                <span>构建时间: {{ versioninfo.buildTime }}</span>
+                <span>版本: {{ versioninfo.commitHash }}</span>
             </el-footer>
         </el-container>
     </div>
@@ -2189,12 +2211,12 @@
             },
 
             handleSelect(key, keyPath) {
-                this.selectIndex = key;
+                if (key) this.selectIndex = key;
 
-                if (key == '3') {
+                if (this.selectIndex == '3') {
                     this.getServerConfig();
                 }
-                else if (key == '2') {
+                else if (this.selectIndex == '2') {
 
                     var ishttps = 'https:' == document.location.protocol ? true : false
                     var isLocal = "file:" == document.location.protocol ? true : false
@@ -2205,7 +2227,7 @@
                         });
                     }
                 }
-                else if (key == '1') {
+                else if (this.selectIndex == '1') {
                     this.chart1 = echarts.init(this.$refs.chart1);
                     this.chart2 = echarts.init(this.$refs.chart2);
                     this.chart3 = echarts.init(this.$refs.chart3);
@@ -2441,7 +2463,15 @@
                     })
                 })
             },
-
+            restartServer() {
+                const url = `${this.host}/index/api/restartServer?secret=${this.secret}`;
+                this.performRequest(url, "", "", resp => {
+                    this.$message({
+                        message: "服务器将在一秒后自动重启",
+                        type: 'success'
+                    });
+                })
+            },
             version() {
                 const url = `${this.host}/index/api/version?secret=${this.secret}`;
                 this.performRequest(url, "", "", resp => {

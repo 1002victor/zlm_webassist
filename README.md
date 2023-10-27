@@ -47,11 +47,13 @@
 
 - [x] 添加拉流代理
 
+- [x] 重启服务器
+
 待实现功能：
 
 - [ ] 关闭代理（目前可用关闭流代替）
 
-- [ ] 开启关闭录音
+- [ ] 开启、关闭录制
 
 - [ ] 查看录制视频
 
@@ -85,7 +87,7 @@
 - [x] "/index/api/getWorkThreadsLoad",
 - [x] "/index/api/kick_session",
 - [x] "/index/api/kick_sessions",
-- [ ] "/index/api/restartServer",
+- [x] "/index/api/restartServer",
 - [x] "/index/api/setServerConfig",
 - [ ] "/index/api/isMediaOnline",
 - [ ] "/index/api/getMediaInfo",
