@@ -68,6 +68,8 @@
 
 访问的时候务必在url中加上secret参数，否则就是个花架子，看不到数据。
 
+如果打开网页是乱码，修改config.ini配置文件中http的charSet为utf-8，然后再重启MediaServer
+
 ## 附录
 
 ### 目前用到的zlm的接口
