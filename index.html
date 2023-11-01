@@ -79,7 +79,7 @@
                         </el-table-column>
                         <el-table-column prop="bytesSpeed" label="数据产生速度">
                             <template #default="scope">
-                                {{scope.row.bytesSpeed}}byte/s
+                                {{scope.row.bytesSpeed | bytesSpeed}}/s
                             </template>
                         </el-table-column>
                         <el-table-column prop="createStamp" label="时间戳"> </el-table-column>
@@ -2108,6 +2108,23 @@
                 }
             }
         },
+        filters:{
+            bytesSpeed:function(value){
+                if(value>=102400){
+                    return (value/102400).toFixed(2).toString()+"M"
+                }
+                else if(value>=10240 && value<102400)
+                {
+                    return (value/10240).toFixed(2).toString()+"kb"
+                }
+                else
+                {
+                    return value.toString()+"byte"
+                }
+            }
+
+        },
+        
         computed: {
             apiurl: function () {
                 const qs_str = Qs.stringify(this.addStreamProxy_params, {
