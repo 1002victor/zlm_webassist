@@ -72,13 +72,42 @@
                         <el-table-column sortable prop="app" label="应用名"> </el-table-column>
                         <el-table-column prop="stream" label="流id"> </el-table-column>
                         <el-table-column sortable prop="schema" label="协议"> </el-table-column>
-                        <el-table-column prop="aliveSecond" label="存活时间"> </el-table-column>
-                        <el-table-column prop="bytesSpeed" label="数据产生速度"> </el-table-column>
+                        <el-table-column prop="aliveSecond" label="存活时间">
+                            <template #default="scope">
+                                {{scope.row.aliveSecond}} s
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="bytesSpeed" label="数据产生速度">
+                            <template #default="scope">
+                                {{scope.row.originType}}byte/s
+                            </template>
+                        </el-table-column>
                         <el-table-column prop="createStamp" label="时间戳"> </el-table-column>
-                        <el-table-column prop="isRecordingHLS" label="是否录制HLS"> </el-table-column>
-                        <el-table-column prop="isRecordingMP4" label="是否录制MP4"> </el-table-column>
-                        <el-table-column prop="originType" label="源类型">
+                        <el-table-column prop="isRecordingHLS" label="是否录制HLS">
+                            <template #default="scope">
+                                <el-tag v-if="scope.row.isRecordingHLS" type="success" effect="dark">是</el-tag>
+                                <el-tag v-else type="danger" effect="dark">否</el-tag>
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="isRecordingMP4" label="是否录制MP4">
+                            <template #default="scope">
+                                <el-tag v-if="scope.row.isRecordingMP4" type="success" effect="dark">是</el-tag>
+                                <el-tag v-else type="danger" effect="dark">否</el-tag>
+                            </template>
 
+                        </el-table-column>
+                        <el-table-column prop="originType" label="源类型">
+                            <template #default="scope">
+                                <el-tag v-if="scope.row.originType==0">unknown</el-tag>
+                                <el-tag v-else-if="scope.row.originType==1">rtmp_push</el-tag>
+                                <el-tag v-else-if="scope.row.originType==2">rtsp_push</el-tag>
+                                <el-tag v-else-if="scope.row.originType==3">rtp_push</el-tag>
+                                <el-tag v-else-if="scope.row.originType==4">pull</el-tag>
+                                <el-tag v-else-if="scope.row.originType==5">ffmpeg_pull</el-tag>
+                                <el-tag v-else-if="scope.row.originType==6">mp4_vod</el-tag>
+                                <el-tag v-else-if="scope.row.originType==7">device_chn</el-tag>
+                                <el-tag v-else-if="scope.row.originType==8">rtc_push</el-tag>
+                            </template>
                         </el-table-column>
                         <el-table-column prop="originTypeStr" label="originTypeStr"> </el-table-column>
                         <el-table-column prop="originUrl" label="源的url"> </el-table-column>
@@ -92,7 +121,7 @@
                             <el-table-column prop="originSock.peer_port" label="peer_port"> </el-table-column>
                         </el-table-column>
 
-                        <el-table-column type="expand" label="音视频轨道" empty-text="无音视频轨道">
+                        <el-table-column type="expand" label="音视频轨道">
                             <template slot-scope="scope">
                                 <el-table v-if="scope.row.tracks.length > 0" :data="scope.row.tracks">
                                     <el-table-column prop="codec_type" label="编码类型">
@@ -100,10 +129,19 @@
                                     <el-table-column prop="codec_id" label="编码类型ID">
                                     </el-table-column>
                                     <el-table-column prop="codec_id_name" label="编码类型名称">
+                                        <template #default="scope">
+                                            <el-tag type="success">{{ scope.row.codec_id_name}}</el-tag>
+                                        </template>
                                     </el-table-column>
                                     <el-table-column prop="frames" label="累计接收帧数">
                                     </el-table-column>
+                                    <el-table-column prop="duration" label="时间戳增量信息">
+                                    </el-table-column>
                                     <el-table-column prop="ready" label="是否准备就绪">
+                                        <template #default="scope">
+                                            <el-tag v-if="scope.row.ready" type="success" effect="dark">是</el-tag>
+                                            <el-tag v-else type="danger" effect="dark">否</el-tag>
+                                        </template>
                                     </el-table-column>
                                     <el-table-column prop="channels" label="通道数(音频)">
                                     </el-table-column>
@@ -282,19 +320,19 @@
 
                                         <div class="conf_item">
                                             <div class="conf_item_label">
-                                                播放最多等待时间
+                                                播放最多等待时间(毫秒)
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-input type="text"
+                                                <el-input type="number"
                                                     v-model="serverConfig.general.maxStreamWaitMS"></el-input>
                                             </div>
                                         </div>
                                         <div class="conf_item">
                                             <div class="conf_item_label">
-                                                合并写缓存大小
+                                                合并写缓存大小(毫秒)
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-input type="text"
+                                                <el-input type="number"
                                                     v-model="serverConfig.general.mergeWriteMS"></el-input>
                                             </div>
                                         </div>
@@ -312,10 +350,10 @@
                                         </div>
                                         <div class="conf_item">
                                             <div class="conf_item_label">
-                                                最大等待时间
+                                                最大等待时间(毫秒)
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-input type="text"
+                                                <el-input type="number"
                                                     v-model="serverConfig.general.streamNoneReaderDelayMS"></el-input>
                                             </div>
                                         </div>
@@ -324,26 +362,35 @@
                                                 未就绪缓存帧数
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-input type="text"
+                                                <el-input type="number"
                                                     v-model="serverConfig.general.unready_frame_cache"></el-input>
                                             </div>
                                         </div>
                                         <div class="conf_item">
                                             <div class="conf_item_label">
-                                                track最多等待时间（ms）
+                                                track最多等待时间(毫秒)
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-input type="text"
+                                                <el-input type="number"
                                                     v-model="serverConfig.general.wait_add_track_ms"></el-input>
                                             </div>
                                         </div>
                                         <div class="conf_item">
                                             <div class="conf_item_label">
-                                                track初始化等待时间（ms）
+                                                track初始化等待时间(毫秒)
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-input type="text"
+                                                <el-input type="number"
                                                     v-model="serverConfig.general.wait_track_ready_ms"></el-input>
+                                            </div>
+                                        </div>
+                                        <div class="conf_item">
+                                            <div class="conf_item_label">
+                                                on_flow_report事件阈值
+                                            </div>
+                                            <div class="conf_item_value">
+                                                <el-input type="number"
+                                                    v-model="serverConfig.general.flowThreshold"></el-input>
                                             </div>
                                         </div>
                                     </div>
@@ -383,7 +430,7 @@
                                                 自动重启时间
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-input type="text"
+                                                <el-input type="number"
                                                     v-model="serverConfig.ffmpeg.restart_sec"></el-input>
                                             </div>
                                         </div>
@@ -460,16 +507,16 @@
                                                 </el-select>
                                             </div>
                                         </div>
-                                        <div class="conf_item">
+                                        <div class="conf_item" v-if="serverConfig.hook.enable=='1'">
                                             <div class="conf_item_label">
-                                                alive触发间隔
+                                                alive触发间隔(秒)
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-input type="text"
+                                                <el-input type="number"
                                                     v-model="serverConfig.hook.alive_interval"></el-input>
                                             </div>
                                         </div>
-                                        <div class="conf_item">
+                                        <div class="conf_item" v-if="serverConfig.hook.enable=='1'">
                                             <div class="conf_item_label">
                                                 admin_params
                                             </div>
@@ -478,35 +525,37 @@
                                                     v-model="serverConfig.hook.admin_params"></el-input>
                                             </div>
                                         </div>
-                                        <div class="conf_item">
+                                        <div class="conf_item" v-if="serverConfig.hook.enable=='1'">
                                             <div class="conf_item_label">
-                                                最大等待回复时间
+                                                最大等待回复时间(秒)
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-input type="text" v-model="serverConfig.hook.timeoutSec"></el-input>
+                                                <el-input type="number"
+                                                    v-model="serverConfig.hook.timeoutSec"></el-input>
                                             </div>
                                         </div>
-                                        <div class="conf_item">
+                                        <div class="conf_item" v-if="serverConfig.hook.enable=='1'">
                                             <div class="conf_item_label">
                                                 失败重试次数
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-input type="text" v-model="serverConfig.hook.retry"></el-input>
+                                                <el-input type="number" v-model="serverConfig.hook.retry"></el-input>
                                             </div>
                                         </div>
-                                        <div class="conf_item">
+                                        <div class="conf_item" v-if="serverConfig.hook.enable=='1'">
                                             <div class="conf_item_label">
-                                                失败重试延时
+                                                失败重试延时(秒)
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-input type="text"
+                                                <el-input type="number"
                                                     v-model="serverConfig.hook.retry_delay"></el-input>
                                             </div>
                                         </div>
 
                                     </div>
                                 </el-col>
-                                <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
+                                <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12"
+                                    v-if="serverConfig.hook.enable=='1'">
                                     <div class="confs">
                                         <div class="conf_item">
                                             <div class="conf_item_label">
@@ -681,10 +730,10 @@
                                         </div>
                                         <div class="conf_item">
                                             <div class="conf_item_label">
-                                                删除延时
+                                                删除延时(秒)
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-input type="text"
+                                                <el-input type="number"
                                                     v-model="serverConfig.hls.deleteDelaySec"></el-input>
                                             </div>
                                         </div>
@@ -693,7 +742,8 @@
                                                 buf大小
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-input type="text" v-model="serverConfig.hls.fileBufSize"></el-input>
+                                                <el-input type="number"
+                                                    v-model="serverConfig.hls.fileBufSize"></el-input>
                                             </div>
                                         </div>
                                         <div class="conf_item">
@@ -701,7 +751,7 @@
                                                 最大切片时间
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-input type="text" v-model="serverConfig.hls.segDur"></el-input>
+                                                <el-input type="number" v-model="serverConfig.hls.segDur"></el-input>
                                             </div>
                                         </div>
                                         <div class="conf_item">
@@ -709,7 +759,7 @@
                                                 保留切片个数
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-input type="text" v-model="serverConfig.hls.segNum"></el-input>
+                                                <el-input type="number" v-model="serverConfig.hls.segNum"></el-input>
                                             </div>
                                         </div>
                                         <div class="conf_item">
@@ -717,7 +767,7 @@
                                                 保留磁盘切片数
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-input type="text" v-model="serverConfig.hls.segRetain"></el-input>
+                                                <el-input type="number" v-model="serverConfig.hls.segRetain"></el-input>
                                             </div>
                                         </div>
                                         <div class="conf_item">
@@ -754,7 +804,7 @@
                                                 溯源总超时
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-input type="text"
+                                                <el-input type="number"
                                                     v-model="serverConfig.cluster.timeout_sec"></el-input>
                                             </div>
                                         </div>
@@ -763,7 +813,7 @@
                                                 溯源失败尝试次数
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-input type="text"
+                                                <el-input type="number"
                                                     v-model="serverConfig.cluster.retry_count"></el-input>
                                             </div>
                                         </div>
@@ -793,7 +843,7 @@
                                         </div>
                                         <div class="conf_item">
                                             <div class="conf_item_label">
-                                                编码
+                                                编码方式
                                             </div>
                                             <div class="conf_item_value">
                                                 <el-select v-model="serverConfig.http.charSet" placeholder="请选择"
@@ -919,6 +969,19 @@
                                     <div class="confs">
                                         <div class="conf_item">
                                             <div class="conf_item_label">
+                                                转协议是否开启音频
+                                            </div>
+                                            <div class="conf_item_value">
+                                                <el-select v-model="serverConfig.protocol.enable_audio"
+                                                    placeholder="请选择" style="width: 100%;">
+                                                    <el-option label="是" value="1"></el-option>
+                                                    <el-option label="否" value="0"></el-option>
+                                                </el-select>
+
+                                            </div>
+                                        </div>
+                                        <div class="conf_item">
+                                            <div class="conf_item_label">
                                                 添加acc静音音频
                                             </div>
                                             <div class="conf_item_value">
@@ -932,17 +995,21 @@
                                         </div>
                                         <div class="conf_item">
                                             <div class="conf_item_label">
-                                                转协议是否开启音频
+                                                <el-tooltip effect="dark" placement="bottom-start">
+                                                    <div slot="content">
+                                                        推流断开后可以在超时时间内重新连接上继续推流，这样播放器会接着播放。
+                                                        <br />置0关闭此特性(推流断开会导致立即断开播放器)
+                                                        <br />此参数不应大于播放器超时时间;单位毫秒
+                                                    </div>
+                                                    <span>继续推流时间(毫秒)</span>
+                                                </el-tooltip>
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-select v-model="serverConfig.protocol.enable_audio"
-                                                    placeholder="请选择" style="width: 100%;">
-                                                    <el-option label="是" value="1"></el-option>
-                                                    <el-option label="否" value="0"></el-option>
-                                                </el-select>
-
+                                                <el-input type="number"
+                                                    v-model="serverConfig.protocol.continue_push_ms"></el-input>
                                             </div>
                                         </div>
+
                                         <div class="conf_item">
                                             <div class="conf_item_label">
                                                 是否将mp4录制当做观看者
