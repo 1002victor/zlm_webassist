@@ -2108,23 +2108,21 @@
                 }
             }
         },
-        filters:{
-            bytesSpeed:function(value){
-                if(value>=102400){
-                    return (value/102400).toFixed(2).toString()+"M"
+        filters: {
+            bytesSpeed: function (value) {
+                if (value >= 102400) {
+                    return (value / 102400).toFixed(2).toString() + "M"
                 }
-                else if(value>=10240 && value<102400)
-                {
-                    return (value/10240).toFixed(2).toString()+"kb"
+                else if (value >= 10240 && value < 102400) {
+                    return (value / 10240).toFixed(2).toString() + "kb"
                 }
-                else
-                {
-                    return value.toString()+"byte"
+                else {
+                    return value.toString() + "byte"
                 }
             }
 
         },
-        
+
         computed: {
             apiurl: function () {
                 const qs_str = Qs.stringify(this.addStreamProxy_params, {
@@ -2419,22 +2417,27 @@
                 }
                 const update_counts = ((queryString.match(/&/g) || []).length + 1)
 
-                const url = `${this.host}/index/api/setServerConfig?secret=${this.secret}&${queryString}`;
-
-                this.performRequest(url, '', '', resp => {
-                    if (update_counts == resp.data.changed) {
-                        this.$message({
-                            message: `保存成功！共修改${resp.data.changed}个参数`,
-                            type: 'success'
-                        });
+                const postdata = { ...{ secret: this.secret }, ...flattened }
+                axios.post(`${this.host}/index/api/setServerConfig`, postdata).then(resp => {
+                    if (resp.status == 200) {
+                        if (resp.data.code === 0) {
+                            if (update_counts == resp.data.changed) {
+                                this.$message({
+                                    message: `保存成功！共修改${resp.data.changed}个参数`,
+                                    type: 'success'
+                                });
+                            }
+                            else {
+                                this.$message({
+                                    message: `存在参数修改失败，共修改${resp.data.changed}个参数，请检查后重试！`,
+                                    type: 'error'
+                                });
+                            }
+                            this.getServerConfig()
+                        }
                     }
-                    else {
-                        this.$message({
-                            message: `存在参数修改失败，共修改${resp.data.changed}个参数，请检查后重试！`,
-                            type: 'error'
-                        });
-                    }
-                    this.getServerConfig()
+                }).catch(err => {
+                    console.log(err)
                 })
             },
 
