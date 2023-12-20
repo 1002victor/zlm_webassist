@@ -2448,7 +2448,7 @@
                     var delays = this.threadsLoad.map(item => item.delay);
                     var loads = this.threadsLoad.map(item => item.load);
                     var max_delay = Math.max(...delays);
-                    var y_max = max_delay>100?max_delay:100;
+                    var y_max = max_delay>100?max_delay*1.2:100;
                     
                     this.chart3.setOption({
                         title: {
