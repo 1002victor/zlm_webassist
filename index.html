@@ -2447,40 +2447,78 @@
                     this.threadsLoad = resp.data.data;
                     var delays = this.threadsLoad.map(item => item.delay);
                     var loads = this.threadsLoad.map(item => item.load);
+                    var max_delay = Math.max(...delays);
+                    var y_max = max_delay>100?max_delay:100;
+                    
                     this.chart3.setOption({
                         title: {
                             text: 'ThreadsLoad'
                         },
-                        tooltip: {},
+                        tooltip: {
+                            trigger: 'axis',
+                            axisPointer: {
+                            type: 'cross',
+                            crossStyle: {
+                                color: '#999'
+                            }
+                            }
+                        },
                         legend: {
                             data: ['延迟', '负载']
                         },
-                        xAxis: {
-                            data: Array.from({ length: this.threadsLoad.length }, (_, i) => i + 1)
-                        },
-                        yAxis: {
-                            max: 100
-                        },
-                        series: [{
+                        xAxis: [
+                            {
+                            type: 'category',
+                            data: Array.from({ length: this.threadsLoad.length }, (_, i) => i + 1),
+                            axisPointer: {
+                                type: 'shadow'
+                            }
+                            }
+                        ],
+                        yAxis: [
+                            {
+                            type: 'value',
                             name: '延迟',
-                            type: 'bar',
-
+                            min: 0,
+                            max: y_max,
+                            axisLabel: {
+                                formatter: '{value} ms'
+                            }
+                            },
+                            {
+                            type: 'value',
+                            name: '负载',
+                            min: 0,
+                            max: 100,
+                            axisLabel: {
+                                formatter: '{value} %'
+                            }
+                            }
+                        ],
+                        series: [
+                            {
+                            name: '延迟',
+                            type: 'line',
+                            tooltip: {
+                                valueFormatter: function (value) {
+                                return value + ' ms';
+                                }
+                            },
                             data: delays
-                        },
-                        {
+                            },
+                            {
                             name: '负载',
                             type: 'bar',
-                            showBackground: true,
-                            label: {
-                                normal: {
-                                    show: true, // 显示数据标签
-                                    position: 'top' // 数据标签位置，可以是 'top', 'insideTop', 'inside', 'insideBottom', 'bottom'
+                            yAxisIndex: 1,
+                            tooltip: {
+                                valueFormatter: function (value) {
+                                return value + ' %';
                                 }
                             },
                             data: loads
-                        }]
+                            }
+                        ]
                     })
-
                 })
             },
 
@@ -2490,38 +2528,76 @@
                     this.workThreadsLoad = resp.data.data;
                     var delays = this.workThreadsLoad.map(item => item.delay);
                     var loads = this.workThreadsLoad.map(item => item.load);
+                    var max_delay = Math.max(delays);
+                    var y_max = max_delay>100?max_delay:100;
                     this.chart2.setOption({
                         title: {
                             text: 'WorkThreadsLoad'
                         },
-                        tooltip: {},
+                        tooltip: {
+                            trigger: 'axis',
+                            axisPointer: {
+                            type: 'cross',
+                            crossStyle: {
+                                color: '#999'
+                            }
+                            }
+                        },
                         legend: {
                             data: ['延迟', '负载']
                         },
-                        xAxis: {
-                            data: Array.from({ length: this.workThreadsLoad.length }, (_, i) => i + 1)
-                        },
-                        yAxis: {
-                            max: 100
-                        },
-
-                        series: [{
+                        xAxis: [
+                            {
+                            type: 'category',
+                            data: Array.from({ length: this.workThreadsLoad.length }, (_, i) => i + 1),
+                            axisPointer: {
+                                type: 'shadow'
+                            }
+                            }
+                        ],
+                        yAxis: [
+                            {
+                            type: 'value',
                             name: '延迟',
-                            type: 'bar',
+                            min: 0,
+                            max: y_max,
+                            axisLabel: {
+                                formatter: '{value} ms'
+                            }
+                            },
+                            {
+                            type: 'value',
+                            name: '负载',
+                            min: 0,
+                            max: 100,
+                            axisLabel: {
+                                formatter: '{value} %'
+                            }
+                            }
+                        ],
+                        series: [
+                            {
+                            name: '延迟',
+                            type: 'line',
+                            tooltip: {
+                                valueFormatter: function (value) {
+                                return value + ' ms';
+                                }
+                            },
                             data: delays
-                        },
-                        {
+                            },
+                            {
                             name: '负载',
                             type: 'bar',
-                            showBackground: true,
-                            label: {
-                                normal: {
-                                    show: true, // 显示数据标签
-                                    position: 'top' // 数据标签位置，可以是 'top', 'insideTop', 'inside', 'insideBottom', 'bottom'
+                            yAxisIndex: 1,
+                            tooltip: {
+                                valueFormatter: function (value) {
+                                return value + ' %';
                                 }
                             },
                             data: loads
-                        }]
+                            }
+                        ]
                     })
                 })
             },
