@@ -57,6 +57,23 @@ function byteString(value) {
     }
 }
 
+function bitsString(value) {
+    const Gbit = 1000 * 1000 * 1000;
+    const Mbit = 1000 * 1000;
+    if (value >= Gbit) {
+        return (value / Gbit).toFixed(2).toString() + "Gbit"
+    }
+    else if (value >= Mbit) {
+        return (value / Mbit).toFixed(2).toString() + "Mbit"
+    }
+    else if (value >= 1000) {
+        return (value / 1000).toFixed(2).toString() + "Kbit"
+    }
+    else {
+        return value.toString() + "bit"
+    }
+}
+
 function durationFormat(seconds) {
     seconds = Math.floor(seconds);
     const hours = Math.floor(seconds / 3600);
